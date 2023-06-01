@@ -22,10 +22,19 @@ mod erc20 {
 
             balances.insert(caller, &total_supply);
 
+            let transfer_event = Transfer {
+                from: None,
+                to: Some(caller),
+                value: total_supply,
+            };
+
+            Self::env().emit_event(transfer_event);
+
             Self {
                 total_supply,
                 balances,
             }
+
         }
 
         /// Returns the total token supply.
@@ -66,6 +75,14 @@ mod erc20 {
             let to_balance = self.balances.get(to).unwrap_or_default();
             self.balances.insert(to, &(to_balance + value));
 
+            let transfer_event = Transfer {
+                from: Some(*from),
+                to: Some(*to),
+                value,
+            };
+
+            self.env().emit_event(transfer_event);
+
             Ok(())
         }
     }
@@ -76,6 +93,17 @@ mod erc20 {
     pub enum Error {
         /// Return if the balance cannot fulfill a request.
         InsufficientBalance,
+    }
+
+    #[ink(event)]
+    pub struct Transfer {
+        #[ink(topic)]
+        from: Option<AccountId>,
+
+        #[ink(topic)]
+        to: Option<AccountId>,
+
+        value: Balance,
     }
 
     /// Specify the ERC-20 result type.
