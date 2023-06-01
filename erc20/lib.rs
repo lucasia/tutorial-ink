@@ -39,7 +39,47 @@ mod erc20 {
         pub fn balance_of(&self, owner: ink::primitives::AccountId) -> Balance {
             self.balances.get(owner).unwrap_or_default()
         }
+
+        /// transfer `value` to the `to` account
+        #[ink(message)]
+        pub fn transfer(&mut self, to:AccountId, value:Balance) -> Result<()> {
+            let from = self.env().caller();
+            self.transform_from_to(&from, &to, value)
+        }
+
+
+        fn transform_from_to(&mut self, from:&AccountId, to:&AccountId, value: Balance) -> Result<()> {
+
+            // ---- deduct the value from `from` account balance ----
+            let from_balance = self.balances.get(from).unwrap_or_default();
+
+            if from_balance < value {
+                return Err(Error::InsufficientBalance)
+            }
+
+            // from_balance = from_balance - value;
+            self.balances.insert(&from, &(from_balance - value));
+
+            // ---- end block ----
+
+            // ---- add the value to the `to` account balance ----
+            let to_balance = self.balances.get(to).unwrap_or_default();
+            self.balances.insert(to, &(to_balance + value));
+
+            Ok(())
+        }
     }
+
+    /// Specify ERC-20 error type.
+    #[derive(Debug, PartialEq, Eq, scale::Encode, scale::Decode)]
+    #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+    pub enum Error {
+        /// Return if the balance cannot fulfill a request.
+        InsufficientBalance,
+    }
+
+    /// Specify the ERC-20 result type.
+    pub type Result<T> = core::result::Result<T, Error>;
 
     #[cfg(test)]
     mod tests {
@@ -82,6 +122,16 @@ mod erc20 {
 
             ink::env::test::set_caller::<Environment>(bob()); // change our caller to bob
             assert_eq!(::ink::env::caller::<Environment>(), bob()); // verify
+        }
+
+        #[ink::test]
+        fn transfer_works() {
+            let mut contract = Erc20::new(100);
+
+            assert_eq!(contract.balance_of(alice()), 100);
+            assert!(contract.transfer(bob(), 10).is_ok());
+            assert_eq!(contract.balance_of(bob()), 10);
+            assert!(contract.transfer(bob(), 100).is_err());
         }
     }
 }
