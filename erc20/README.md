@@ -11,10 +11,10 @@ cargo contract build
 ```
 
 ## Upload and Instantiate the contract
-### Start the local blockchain node, e.g.:
+### Start the local blockchain node with logging '--log [info|debug|trace]'
 ```
 cd ../artifacts/substrate-contracts-node-linux
-./substrate-contracts-node
+./substrate-contracts-node --log info,runtime::contracts=debug 2>&1
 ```
 
 ### Run the following (-x to execute on the chain).  **COPY** the contract address for later use.
