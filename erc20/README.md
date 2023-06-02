@@ -30,16 +30,29 @@ export INSTANTIATED_CONTRACT_ADDRESS=<<CONTRACT_ADDRESS>>
 echo $INSTANTIATED_CONTRACT_ADDRESS 
 ```
 
-### Verify the total_supply() method
+### Execute different methods
+**total_supply()**
 ```
 cargo contract call --contract $INSTANTIATED_CONTRACT_ADDRESS \
     --message total_supply --suri //Alice
 ```
-
-### Verify the balance_of() method
+**//Allice getting balance_of(//Alice)**
 ```
 cargo contract call --contract $INSTANTIATED_CONTRACT_ADDRESS \
 --message balance_of --args 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY \
+--suri //Alice
+```
+**//Bob getting balance_of(//Bob)**
+```
+cargo contract call --contract $INSTANTIATED_CONTRACT_ADDRESS \
+--message balance_of --args 5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty \
+--suri //Bob
+```
+
+**//Alice transfer(//Bob, 10)**
+```
+cargo contract call --contract $INSTANTIATED_CONTRACT_ADDRESS \
+--message transfer --args 5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty 10 \
 --suri //Alice
 ```
 
